@@ -33,6 +33,7 @@ import {
   AlertDialogOverlay,
   useDisclosure,
 } from '@chakra-ui/react';
+import {getFunctions, httpsCallable} from 'firebase/functions';
 import {useFocusableElementRef, useItems} from '../hooks';
 import {DrinkCard, TransactionList} from './';
 import {Item, Transaction} from '../models';
@@ -74,6 +75,7 @@ export const AccountDrawer = ({
   const [isCharging, setIsCharging] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState<string>('');
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [isSendingPaymentLink, setIsSendingPaymentLink] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[] | null>(null);
   const [isLoadingTransactions, setIsLoadingTransactions] = useState(false);
   const [transactionLimit, setTransactionLimit] = useState(10);
@@ -243,6 +245,52 @@ export const AccountDrawer = ({
       setIsProcessingPayment(false);
     }
   }, [paymentAmount, firestore, accountId, onClose, toast]);
+
+  const handleSendPaymentLink = useCallback(async () => {
+    const amount = parseFloat(paymentAmount);
+
+    if (isNaN(amount) || amount <= 0) {
+      toast({
+        title: 'Invalid amount',
+        description: 'Payment amount must be greater than 0',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    setIsSendingPaymentLink(true);
+    try {
+      const functions = getFunctions();
+      const sendPaymentLink = httpsCallable<
+        {accountId: string; amount: number},
+        {success: boolean; checkoutId: string}
+      >(functions, 'sendPaymentLink');
+
+      await sendPaymentLink({accountId, amount});
+
+      toast({
+        title: 'Payment link sent!',
+        description: `Payment link sent to ${name} on Slack!`,
+        status: 'success',
+        duration: 5000,
+        isClosable: true,
+      });
+
+      setPaymentAmount('');
+    } catch (error) {
+      toast({
+        title: 'Failed to send payment link',
+        description: error instanceof Error ? error.message : 'Unknown error',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setIsSendingPaymentLink(false);
+    }
+  }, [paymentAmount, accountId, name, toast]);
 
   const handleInitiateDelete = useCallback(
     (transaction: Transaction) => {
@@ -496,6 +544,25 @@ export const AccountDrawer = ({
                       }}
                     >
                       Pay
+                    </Button>
+
+                    <Button
+                      colorScheme={'blue'}
+                      size={'lg'}
+                      width={'full'}
+                      onClick={() => {
+                        void handleSendPaymentLink();
+                      }}
+                      isDisabled={!paymentAmount || paymentAmountValue <= 0}
+                      isLoading={isSendingPaymentLink}
+                      loadingText={'Sending...'}
+                      transition={'all 0.2s'}
+                      _hover={{
+                        transform: 'translateY(-2px)',
+                        boxShadow: 'lg',
+                      }}
+                    >
+                      Send Payment Link via Slack
                     </Button>
                   </VStack>
                 )}
