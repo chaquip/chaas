@@ -27,21 +27,21 @@ describe('sendPaymentLink', () => {
   it('should construct return URL with accountId query parameter', () => {
     const accountId = 'account-123';
     const functionUrl =
-      'https://us-central1-test-project.cloudfunctions.net/validatePayment';
+      'https://us-central1-test-project.cloudfunctions.net/handleSumUpWebhook';
     const expectedReturnUrl = `${functionUrl}?accountId=${encodeURIComponent(accountId)}`;
 
     expect(expectedReturnUrl).toBe(
-      'https://us-central1-test-project.cloudfunctions.net/validatePayment?accountId=account-123',
+      'https://us-central1-test-project.cloudfunctions.net/handleSumUpWebhook?accountId=account-123',
     );
   });
 
   it('should encode special characters in accountId', () => {
     const accountId = 'account with spaces';
-    const functionUrl = 'https://example.com/validatePayment';
+    const functionUrl = 'https://example.com/handleSumUpWebhook';
     const returnUrl = `${functionUrl}?accountId=${encodeURIComponent(accountId)}`;
 
     expect(returnUrl).toBe(
-      'https://example.com/validatePayment?accountId=account%20with%20spaces',
+      'https://example.com/handleSumUpWebhook?accountId=account%20with%20spaces',
     );
   });
 
@@ -58,7 +58,7 @@ describe('sendPaymentLink', () => {
     const amount = 50.0;
     const transactionId = 'mock-uuid-123';
     const merchantCode = 'MERCHANT123';
-    const functionUrl = 'https://example.com/validatePayment';
+    const functionUrl = 'https://example.com/handleSumUpWebhook';
     const returnUrl = `${functionUrl}?accountId=${encodeURIComponent(accountId)}`;
 
     const mockCreateCheckout = vi.mocked(createCheckout);
@@ -93,7 +93,7 @@ describe('sendPaymentLink', () => {
       checkoutReference: 'transaction-123',
       description: 'Test payment',
       merchantCode: 'MERCHANT123',
-      returnUrl: 'https://example.com/validatePayment?accountId=account-123',
+      returnUrl: 'https://example.com/handleSumUpWebhook?accountId=account-123',
     };
 
     // Verify the parameter is named 'returnUrl'
@@ -111,17 +111,17 @@ describe('sendPaymentLink', () => {
   });
 
   it('should use environment variable for function URL if available', () => {
-    const envUrl = 'https://custom-domain.com/validatePayment';
+    const envUrl = 'https://custom-domain.com/handleSumUpWebhook';
 
-    // If VALIDATE_PAYMENT_URL is set, use it
-    expect(envUrl).toBe('https://custom-domain.com/validatePayment');
+    // If SUMUP_WEBHOOK_URL is set, use it
+    expect(envUrl).toBe('https://custom-domain.com/handleSumUpWebhook');
   });
 
   it('should fall back to default URL if env variable not set', () => {
     const projectId = 'test-project';
-    const defaultUrl = `https://us-central1-${projectId}.cloudfunctions.net/validatePayment`;
+    const defaultUrl = `https://us-central1-${projectId}.cloudfunctions.net/handleSumUpWebhook`;
 
     expect(defaultUrl).toContain(projectId);
-    expect(defaultUrl).toContain('validatePayment');
+    expect(defaultUrl).toContain('handleSumUpWebhook');
   });
 });

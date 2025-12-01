@@ -20,8 +20,8 @@
     "prettier": "prettier --check .",
     "prettier:fix": "prettier --write .",
     "preview": "vite preview",
-    "test:unit": "vitest run --project unit",
-    "test:unit:watch": "vitest watch --project unit",
+    "test:unit": "vitest run --project unit --project unit-node",
+    "test:unit:watch": "vitest watch --project unit --project unit-node",
     "test:integration": "firebase emulators:exec --project chaas-test --only firestore,auth 'vitest run --project integration'",
     "test:integration:watch": "firebase emulators:exec --project chaas-test --only firestore,auth 'vitest watch --project integration'"
   },

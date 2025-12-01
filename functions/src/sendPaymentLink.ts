@@ -75,8 +75,8 @@ export const sendPaymentLink = onCall(async (request) => {
     // Build webhook return URL with accountId as query parameter
     // SumUp will POST to this URL with checkout status changes
     const functionUrl =
-      process.env.VALIDATE_PAYMENT_URL ??
-      `https://us-central1-${process.env.GCLOUD_PROJECT ?? 'unknown-project'}.cloudfunctions.net/validatePayment`;
+      process.env.SUMUP_WEBHOOK_URL ??
+      `https://us-central1-${process.env.GCLOUD_PROJECT ?? 'unknown-project'}.cloudfunctions.net/handleSumUpWebhook`;
     const returnUrl = `${functionUrl}?accountId=${encodeURIComponent(data.accountId)}`;
 
     // Create SumUp checkout

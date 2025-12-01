@@ -3,7 +3,7 @@ import {getFirestore} from 'firebase-admin/firestore';
 import {getCheckoutDetails} from './shared/sumupService.js';
 import {addPayment} from './shared/transactionService.js';
 
-export const validatePayment = onRequest(async (req, res) => {
+export const handleSumUpWebhook = onRequest(async (req, res) => {
   // Only accept POST requests (SumUp webhooks)
   if (req.method !== 'POST') {
     res.status(405).send('Method Not Allowed');
@@ -72,7 +72,7 @@ export const validatePayment = onRequest(async (req, res) => {
 
     if (!accountDoc.exists) {
       console.error(`Account not found: ${accountId}`);
-      res.status(404).send('Account not found');
+      res.status(200).send(); // Acknowledge webhook, don't retry
       return;
     }
 

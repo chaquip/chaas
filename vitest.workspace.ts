@@ -6,8 +6,16 @@ export default defineWorkspace([
     test: {
       name: 'unit',
       include: ['**/*.unit.test.ts?(x)'],
+      exclude: ['functions/**/*.unit.test.ts'],
       environment: 'jsdom',
       setupFiles: ['vitest.setup.unit.ts'],
+    },
+  },
+  {
+    test: {
+      name: 'unit-node',
+      include: ['functions/**/*.unit.test.ts'],
+      environment: 'node',
     },
   },
   {

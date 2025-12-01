@@ -30,7 +30,7 @@ const createMockRequest = (
   query,
 });
 
-describe('validatePayment webhook', () => {
+describe('handleSumUpWebhook', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
