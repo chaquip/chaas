@@ -39,7 +39,7 @@ export async function createCheckout(
     const response = await fetch('https://api.sumup.com/v0.1/checkouts', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
+        Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(requestBody),
@@ -48,7 +48,7 @@ export async function createCheckout(
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(
-        `SumUp API error (${response.status}): ${errorText}`,
+        `SumUp API error (${response.status.toString()}): ${errorText}`,
       );
     }
 
@@ -98,7 +98,7 @@ export async function getCheckoutDetails(
       {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${apiKey}`,
+          Authorization: `Bearer ${apiKey}`,
           'Content-Type': 'application/json',
         },
       },
@@ -107,7 +107,7 @@ export async function getCheckoutDetails(
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(
-        `SumUp API error (${response.status}): ${errorText}`,
+        `SumUp API error (${response.status.toString()}): ${errorText}`,
       );
     }
 

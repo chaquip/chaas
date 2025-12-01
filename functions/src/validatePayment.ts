@@ -15,7 +15,10 @@ export const validatePayment = onRequest(async (req, res) => {
     // Expected format: { "event_type": "CHECKOUT_STATUS_CHANGED", "id": "checkout-id" }
     const webhookPayload = req.body;
 
-    if (!webhookPayload || webhookPayload.event_type !== 'CHECKOUT_STATUS_CHANGED') {
+    if (
+      !webhookPayload ||
+      webhookPayload.event_type !== 'CHECKOUT_STATUS_CHANGED'
+    ) {
       console.error('Invalid webhook payload:', webhookPayload);
       res.status(400).send('Bad Request - Invalid webhook payload');
       return;
@@ -88,7 +91,9 @@ export const validatePayment = onRequest(async (req, res) => {
     // Record payment with the same transaction ID as checkout_reference
     await addPayment(firestore, accountId, checkout.amount, transactionId);
 
-    console.log(`Payment recorded: €${checkout.amount} for account ${accountId} (transaction: ${transactionId})`);
+    console.log(
+      `Payment recorded: €${checkout.amount.toString()} for account ${accountId} (transaction: ${transactionId})`,
+    );
 
     res.status(200).send(); // Acknowledge webhook success
   } catch (error) {
