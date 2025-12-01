@@ -4,7 +4,7 @@ interface CreateCheckoutParams {
   checkoutReference: string;
   description: string;
   merchantCode: string;
-  webhookUrl: string;
+  returnUrl: string;
 }
 
 interface CreateCheckoutResponse {
@@ -29,9 +29,9 @@ export async function createCheckout(
     checkout_reference: params.checkoutReference,
     description: params.description,
     merchant_code: params.merchantCode,
+    return_url: params.returnUrl,
     hosted_checkout: {
       enabled: true,
-      return_url: params.webhookUrl,
     },
   };
 
@@ -94,7 +94,7 @@ export async function getCheckoutDetails(
 
   try {
     const response = await fetch(
-      `https://api.sumup.com/v0.1/checkouts?checkout_reference=${checkoutId}`,
+      `https://api.sumup.com/v0.1/checkouts/${checkoutId}`,
       {
         method: 'GET',
         headers: {
@@ -111,14 +111,11 @@ export async function getCheckoutDetails(
       );
     }
 
-    const responseData = await response.json();
-    const data = Array.isArray(responseData) ? responseData[0] : responseData;
+    const data = await response.json();
 
     if (!data) {
       throw new Error('No checkout data returned from SumUp API');
     }
-
-    console.log('Received checkout details:', data);
 
     return {
       id: data.id,

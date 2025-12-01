@@ -4,45 +4,54 @@ import {getCheckoutDetails} from './shared/sumupService.js';
 import {addPayment} from './shared/transactionService.js';
 
 export const validatePayment = onRequest(async (req, res) => {
-  // Only accept GET requests
-  if (req.method !== 'GET') {
+  // Only accept POST requests (SumUp webhooks)
+  if (req.method !== 'POST') {
     res.status(405).send('Method Not Allowed');
     return;
   }
 
   try {
-    // Get checkout ID from query parameter and URL decode it
-    const checkoutIdEncoded = req.query.checkoutId as string;
+    // Parse webhook payload from SumUp
+    // Expected format: { "event_type": "CHECKOUT_STATUS_CHANGED", "id": "checkout-id" }
+    const webhookPayload = req.body;
 
-    if (!checkoutIdEncoded) {
-      console.error('Missing checkoutId in query parameter');
+    if (!webhookPayload || webhookPayload.event_type !== 'CHECKOUT_STATUS_CHANGED') {
+      console.error('Invalid webhook payload:', webhookPayload);
+      res.status(400).send('Bad Request - Invalid webhook payload');
+      return;
+    }
+
+    const checkoutId = webhookPayload.id;
+    if (!checkoutId) {
+      console.error('Missing checkout ID in webhook payload');
       res.status(400).send('Bad Request - Missing checkout ID');
       return;
     }
 
-    const checkoutId = decodeURIComponent(checkoutIdEncoded);
-    console.log('Validating payment for checkout:', checkoutId);
+    console.log('Received webhook for checkout:', checkoutId);
+
+    // Get accountId from query parameter
+    const accountIdEncoded = req.query.accountId as string;
+    if (!accountIdEncoded) {
+      console.error('Missing accountId in query parameter');
+      res.status(400).send('Bad Request - Missing account ID');
+      return;
+    }
+    const accountId = decodeURIComponent(accountIdEncoded);
 
     // Fetch checkout details from SumUp to verify payment
+    // This is required by SumUp: always verify webhook events via API
     const checkout = await getCheckoutDetails(checkoutId);
 
     // Verify payment was successful
     if (checkout.status !== 'PAID') {
-      console.error(`Payment not completed. Status: ${checkout.status}`);
-      res.redirect('https://akeneo.com');
+      console.log(`Payment not yet completed. Status: ${checkout.status}`);
+      res.status(200).send(); // Acknowledge webhook, don't retry
       return;
     }
 
-    // Parse checkout_reference: format is "accountId:transactionId"
-    const parts = checkout.checkout_reference.split('---');
-    if (parts.length !== 2) {
-      console.error('Invalid checkout_reference format:', checkout.checkout_reference);
-      res.status(400).send('Bad Request - Invalid checkout reference format');
-      return;
-    }
-
-    const accountId = parts[0];
-    const transactionId = parts[1];
+    // checkout_reference contains the transactionId
+    const transactionId = checkout.checkout_reference;
 
     console.log('Payment validated:', {
       accountId,
@@ -72,7 +81,7 @@ export const validatePayment = onRequest(async (req, res) => {
 
     if (existingTransaction.exists) {
       console.log(`Payment already recorded: ${transactionId}`);
-      res.redirect('https://akeneo.com');
+      res.status(200).send(); // Acknowledge webhook (idempotency)
       return;
     }
 
@@ -81,7 +90,7 @@ export const validatePayment = onRequest(async (req, res) => {
 
     console.log(`Payment recorded: €${checkout.amount} for account ${accountId} (transaction: ${transactionId})`);
 
-    res.redirect('https://akeneo.com');
+    res.status(200).send(); // Acknowledge webhook success
   } catch (error) {
     console.error('Error validating payment:', error);
 

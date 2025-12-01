@@ -69,16 +69,15 @@ export const sendPaymentLink = onCall(async (request) => {
     // Generate a unique transaction ID
     const transactionId = randomUUID();
 
-    // Encode both accountId and transactionId into checkout_reference
-    // Format: "accountId:transactionId"
-    const checkoutReference = `${data.accountId}---${transactionId}`;
+    // Use transactionId as checkout_reference
+    const checkoutReference = transactionId;
 
-    // Build return URL with checkout reference
-    // Note: SumUp will append the checkoutId automatically when redirecting
+    // Build webhook return URL with accountId as query parameter
+    // SumUp will POST to this URL with checkout status changes
     const functionUrl =
       process.env.VALIDATE_PAYMENT_URL ||
       `https://us-central1-${process.env.GCLOUD_PROJECT}.cloudfunctions.net/validatePayment`;
-    const returnUrl = `${functionUrl}?checkoutId=${encodeURIComponent(checkoutReference)}`;
+    const returnUrl = `${functionUrl}?accountId=${encodeURIComponent(data.accountId)}`;
 
     // Create SumUp checkout
     const checkout = await createCheckout({
@@ -87,7 +86,7 @@ export const sendPaymentLink = onCall(async (request) => {
       checkoutReference,
       description: `Chaquip payment for ${account.slack.name}`,
       merchantCode: sumupMerchantCode,
-      webhookUrl: returnUrl,
+      returnUrl,
     });
 
     console.log('Created SumUp checkout:', returnUrl);
