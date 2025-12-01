@@ -8,7 +8,7 @@ import prettierConfig from 'eslint-config-prettier';
 import vitest from '@vitest/eslint-plugin';
 
 export default tseslint.config(
-  {ignores: ['dist', 'functions/lib']},
+  {ignores: ['dist', 'functions/lib', 'functions/vitest.config.ts']},
   {
     extends: [
       js.configs.recommended,

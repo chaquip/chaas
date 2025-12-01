@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {executeUpdateUsers} from './updateUsersLogic';
 import type {UpdateUsersOptions, Account} from './updateUsersLogic';
 
 // Create mock functions
 const mockUsersList = vi.fn();
+const mockCollectionGet = vi.fn();
 
 // Mock the Slack WebClient
 vi.mock('@slack/web-api', () => ({
@@ -15,18 +17,20 @@ vi.mock('@slack/web-api', () => ({
 }));
 
 // Mock Firestore
+interface BatchOp {
+  type: 'set' | 'update' | 'delete';
+  ref: {id: string};
+  data?: unknown;
+}
+
 const createMockFirestore = () => {
-  const batchOps: Array<{
-    type: 'set' | 'update' | 'delete';
-    ref: {id: string};
-    data?: unknown;
-  }> = [];
+  const batchOps: BatchOp[] = [];
 
   return {
     collection: vi.fn().mockReturnValue({
-      get: vi.fn(),
+      get: mockCollectionGet,
       doc: vi.fn((id?: string) => ({
-        id: id || 'generated-id-123',
+        id: id ?? 'generated-id-123',
       })),
     }),
     batch: vi.fn().mockReturnValue({
@@ -50,7 +54,7 @@ describe('updateUsersLogic', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockFirestore = createMockFirestore() as any;
+    mockFirestore = createMockFirestore();
   });
 
   describe('Employee Detection', () => {
@@ -73,7 +77,7 @@ describe('updateUsersLogic', () => {
       });
 
       // Mock empty Firestore (no existing accounts)
-      mockFirestore.collection().get.mockResolvedValueOnce({
+      mockCollectionGet.mockResolvedValueOnce({
         docs: [],
       });
 
@@ -108,7 +112,7 @@ describe('updateUsersLogic', () => {
         response_metadata: {next_cursor: ''},
       });
 
-      mockFirestore.collection().get.mockResolvedValueOnce({
+      mockCollectionGet.mockResolvedValueOnce({
         docs: [],
       });
 
@@ -141,7 +145,7 @@ describe('updateUsersLogic', () => {
         response_metadata: {next_cursor: ''},
       });
 
-      mockFirestore.collection().get.mockResolvedValueOnce({
+      mockCollectionGet.mockResolvedValueOnce({
         docs: [],
       });
 
@@ -174,7 +178,7 @@ describe('updateUsersLogic', () => {
         response_metadata: {next_cursor: ''},
       });
 
-      mockFirestore.collection().get.mockResolvedValueOnce({
+      mockCollectionGet.mockResolvedValueOnce({
         docs: [],
       });
 
@@ -225,7 +229,7 @@ describe('updateUsersLogic', () => {
         response_metadata: {next_cursor: ''},
       });
 
-      mockFirestore.collection().get.mockResolvedValueOnce({
+      mockCollectionGet.mockResolvedValueOnce({
         docs: [
           {
             data: () => existingAccount,
@@ -282,7 +286,7 @@ describe('updateUsersLogic', () => {
         response_metadata: {next_cursor: ''},
       });
 
-      mockFirestore.collection().get.mockResolvedValueOnce({
+      mockCollectionGet.mockResolvedValueOnce({
         docs: [
           {
             data: () => existingAccount,
@@ -342,7 +346,7 @@ describe('updateUsersLogic', () => {
         response_metadata: {next_cursor: ''},
       });
 
-      mockFirestore.collection().get.mockResolvedValueOnce({
+      mockCollectionGet.mockResolvedValueOnce({
         docs: [
           {
             data: () => existingAccount,
@@ -397,7 +401,7 @@ describe('updateUsersLogic', () => {
         response_metadata: {next_cursor: ''},
       });
 
-      mockFirestore.collection().get.mockResolvedValueOnce({
+      mockCollectionGet.mockResolvedValueOnce({
         docs: [
           {
             data: () => existingAccount,
@@ -443,7 +447,7 @@ describe('updateUsersLogic', () => {
         response_metadata: {next_cursor: ''},
       });
 
-      mockFirestore.collection().get.mockResolvedValueOnce({
+      mockCollectionGet.mockResolvedValueOnce({
         docs: [
           {
             data: () => existingAccount,
@@ -490,7 +494,7 @@ describe('updateUsersLogic', () => {
         response_metadata: {next_cursor: ''},
       });
 
-      mockFirestore.collection().get.mockResolvedValueOnce({
+      mockCollectionGet.mockResolvedValueOnce({
         docs: [
           {
             data: () => existingAccount,
@@ -544,7 +548,7 @@ describe('updateUsersLogic', () => {
         response_metadata: {next_cursor: ''},
       });
 
-      mockFirestore.collection().get.mockResolvedValueOnce({
+      mockCollectionGet.mockResolvedValueOnce({
         docs: [
           {
             data: () => existingAccount,
@@ -582,7 +586,7 @@ describe('updateUsersLogic', () => {
         response_metadata: {next_cursor: ''},
       });
 
-      mockFirestore.collection().get.mockResolvedValueOnce({
+      mockCollectionGet.mockResolvedValueOnce({
         docs: [],
       });
 
@@ -635,7 +639,7 @@ describe('updateUsersLogic', () => {
           response_metadata: {next_cursor: ''},
         });
 
-      mockFirestore.collection().get.mockResolvedValueOnce({
+      mockCollectionGet.mockResolvedValueOnce({
         docs: [],
       });
 
@@ -670,7 +674,7 @@ describe('updateUsersLogic', () => {
         response_metadata: {next_cursor: ''},
       });
 
-      mockFirestore.collection().get.mockResolvedValueOnce({
+      mockCollectionGet.mockResolvedValueOnce({
         docs: [],
       });
 
@@ -708,7 +712,7 @@ describe('updateUsersLogic', () => {
         response_metadata: {next_cursor: ''},
       });
 
-      mockFirestore.collection().get.mockResolvedValueOnce({
+      mockCollectionGet.mockResolvedValueOnce({
         docs: [],
       });
 
