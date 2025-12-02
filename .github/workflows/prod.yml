@@ -75,15 +75,10 @@ jobs:
       - name: Build functions
         run: cd functions && yarn build
 
-      - name: Deploy to Firebase Hosting
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_PROD }}
-          projectId: ${{ secrets.FIREBASE_PROJECT_ID_PROD }}
-          channelId: live
-
       - name: Deploy Firebase Functions
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
         run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_PROD }}' > ${{ runner.temp }}/firebase-service-account.json
           yarn global add firebase-tools
-          firebase deploy --only functions --project ${{ secrets.FIREBASE_PROJECT_ID_PROD }} --token ${{ secrets.FIREBASE_TOKEN_PROD }} --non-interactive
+          firebase deploy --project ${{ secrets.FIREBASE_PROJECT_ID_PROD }} --non-interactive
