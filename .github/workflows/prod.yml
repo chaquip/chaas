@@ -60,16 +60,25 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
+      - name: Install functions dependencies
+        run: cd functions && yarn install --frozen-lockfile
+
       - name: Create .env file
         run: echo "${{ secrets.ENV_FILE_PROD }}" > .env
+
+      - name: Create functions .env file
+        run: echo "${{ secrets.FUNCTIONS_ENV_PROD }}" > functions/.env
 
       - name: Build
         run: yarn build
 
-      - name: Deploy to Firebase Production
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_PROD }}
-          projectId: ${{ secrets.FIREBASE_PROJECT_ID_PROD }}
-          channelId: live
+      - name: Build functions
+        run: cd functions && yarn build
+
+      - name: Deploy Firebase Functions
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_PROD }}' > ${{ runner.temp }}/firebase-service-account.json
+          yarn global add firebase-tools
+          firebase deploy --project ${{ secrets.FIREBASE_PROJECT_ID_PROD }} --non-interactive

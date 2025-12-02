@@ -11,12 +11,21 @@ import {
   MenuButton,
   MenuList,
   MenuItem,
+  useToast,
+  useDisclosure,
 } from '@chakra-ui/react';
-import {ChevronDownIcon} from '@chakra-ui/icons';
-import {AccountCard, AccountSearchInput, HelpModal} from '../components';
+import {ChevronDownIcon, RepeatIcon} from '@chakra-ui/icons';
+import {getFunctions, httpsCallable} from 'firebase/functions';
+import {
+  AccountCard,
+  AccountSearchInput,
+  HelpModal,
+  SyncResultsModal,
+} from '../components';
 import {useAccounts, useAuth} from '../hooks';
 import {FocusableElement} from '../models';
 import {FocusableElementRefContext} from '../contexts';
+import type {SyncResults} from '../types/syncResults';
 
 type SortOption = 'lastTransaction' | 'debt' | 'totalPaid';
 
@@ -27,10 +36,42 @@ export const AccountGrid = () => {
   const accounts = useAccounts(deferredSearchValue);
   const focusableElementRef = useRef<FocusableElement>(null);
   const {logOut} = useAuth();
+  const toast = useToast();
+  const {isOpen, onOpen, onClose} = useDisclosure();
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [syncResults, setSyncResults] = useState<SyncResults | null>(null);
 
   const handleChargeSuccess = useCallback(() => {
     setSearchValue('');
   }, []);
+
+  const handleSyncUsers = useCallback(async () => {
+    setIsUpdating(true);
+    setSyncResults(null);
+
+    try {
+      const functions = getFunctions();
+      const updateUsers = httpsCallable<Record<string, never>, SyncResults>(
+        functions,
+        'updateUsers',
+      );
+      const response = await updateUsers({});
+      setSyncResults(response.data);
+      onOpen();
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to sync users';
+      toast({
+        title: 'Sync Failed',
+        description: errorMessage,
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  }, [toast, onOpen]);
 
   const sortedAccounts = useMemo(() => {
     if (accounts === null) return null;
@@ -105,50 +146,63 @@ export const AccountGrid = () => {
           px={8}
           py={3}
         >
-          <HStack spacing={3}>
-            <Text fontSize={'sm'} fontWeight={'medium'} color={'gray.600'}>
-              Sort by:
-            </Text>
-            <Menu>
-              <MenuButton
-                as={Button}
-                rightIcon={<ChevronDownIcon />}
-                size={'sm'}
-                variant={'outline'}
-                bg={'white'}
-                borderColor={'gray.300'}
-                width={'200px'}
-                textAlign={'left'}
-                fontWeight={'normal'}
-              >
-                {sortBy === 'lastTransaction' && 'Last Transaction'}
-                {sortBy === 'debt' && 'Debt'}
-                {sortBy === 'totalPaid' && 'Total Paid'}
-              </MenuButton>
-              <MenuList minWidth={'200px'}>
-                <MenuItem
-                  onClick={() => {
-                    setSortBy('lastTransaction');
-                  }}
+          <HStack spacing={3} justify={'space-between'}>
+            <HStack spacing={3}>
+              <Text fontSize={'sm'} fontWeight={'medium'} color={'gray.600'}>
+                Sort by:
+              </Text>
+              <Menu>
+                <MenuButton
+                  as={Button}
+                  rightIcon={<ChevronDownIcon />}
+                  size={'sm'}
+                  variant={'outline'}
+                  bg={'white'}
+                  borderColor={'gray.300'}
+                  width={'200px'}
+                  textAlign={'left'}
+                  fontWeight={'normal'}
                 >
-                  Last Transaction
-                </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    setSortBy('debt');
-                  }}
-                >
-                  Debt
-                </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    setSortBy('totalPaid');
-                  }}
-                >
-                  Total Paid
-                </MenuItem>
-              </MenuList>
-            </Menu>
+                  {sortBy === 'lastTransaction' && 'Last Transaction'}
+                  {sortBy === 'debt' && 'Debt'}
+                  {sortBy === 'totalPaid' && 'Total Paid'}
+                </MenuButton>
+                <MenuList minWidth={'200px'}>
+                  <MenuItem
+                    onClick={() => {
+                      setSortBy('lastTransaction');
+                    }}
+                  >
+                    Last Transaction
+                  </MenuItem>
+                  <MenuItem
+                    onClick={() => {
+                      setSortBy('debt');
+                    }}
+                  >
+                    Debt
+                  </MenuItem>
+                  <MenuItem
+                    onClick={() => {
+                      setSortBy('totalPaid');
+                    }}
+                  >
+                    Total Paid
+                  </MenuItem>
+                </MenuList>
+              </Menu>
+            </HStack>
+            <Button
+              onClick={() => void handleSyncUsers()}
+              leftIcon={<RepeatIcon />}
+              colorScheme={'blue'}
+              variant={'outline'}
+              size={'sm'}
+              isLoading={isUpdating}
+              loadingText={'Syncing...'}
+            >
+              Sync Users
+            </Button>
           </HStack>
         </Box>
         <Box px={8} py={8}>
@@ -171,6 +225,11 @@ export const AccountGrid = () => {
         </Box>
       </Box>
       <HelpModal />
+      <SyncResultsModal
+        isOpen={isOpen}
+        onClose={onClose}
+        results={syncResults}
+      />
     </FocusableElementRefContext.Provider>
   );
 };

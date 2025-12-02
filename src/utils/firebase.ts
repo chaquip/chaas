@@ -1,6 +1,7 @@
 import {FirebaseApp, FirebaseOptions, initializeApp} from 'firebase/app';
 import {connectAuthEmulator, getAuth} from 'firebase/auth';
 import {connectFirestoreEmulator, getFirestore} from 'firebase/firestore';
+import {connectFunctionsEmulator, getFunctions} from 'firebase/functions';
 
 export enum Env {
   PROD,
@@ -41,6 +42,8 @@ export const createFirebaseApp = (env: Env): FirebaseApp => {
     connectFirestoreEmulator(firestore, 'localhost', 8080);
     const auth = getAuth(app);
     connectAuthEmulator(auth, 'http://localhost:9099', {disableWarnings: true});
+    const functions = getFunctions(app);
+    connectFunctionsEmulator(functions, 'localhost', 5001);
   }
 
   return app;

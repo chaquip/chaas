@@ -8,7 +8,7 @@ import prettierConfig from 'eslint-config-prettier';
 import vitest from '@vitest/eslint-plugin';
 
 export default tseslint.config(
-  {ignores: ['dist']},
+  {ignores: ['dist', 'functions/lib', 'functions/vitest.config.ts']},
   {
     extends: [
       js.configs.recommended,
@@ -16,6 +16,7 @@ export default tseslint.config(
       ...tseslint.configs.stylisticTypeChecked,
     ],
     files: ['**/*.{ts,tsx}'],
+    ignores: ['functions/**'],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
@@ -42,6 +43,29 @@ export default tseslint.config(
       ...vitest.configs.recommended.rules,
     },
     settings: {react: {version: '18.3'}},
+  },
+  {
+    extends: [
+      js.configs.recommended,
+      ...tseslint.configs.strictTypeChecked,
+      ...tseslint.configs.stylisticTypeChecked,
+    ],
+    files: ['functions/**/*.ts'],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.node,
+      parserOptions: {
+        project: ['./functions/tsconfig.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    rules: {
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+    },
   },
   prettierConfig,
 );
