@@ -17,7 +17,7 @@ const createMockFirestore = (existingTransactionIds: string[] = []) => {
   let transactionLock = Promise.resolve();
 
   return {
-    collection: vi.fn((collectionName: string) => ({
+    collection: vi.fn(() => ({
       doc: vi.fn((id?: string) => {
         const docId = id ?? 'generated-id-123';
         return {
@@ -35,7 +35,7 @@ const createMockFirestore = (existingTransactionIds: string[] = []) => {
       get: vi.fn(),
     })),
     batch: vi.fn(() => {
-      const batchSets: Array<{ref: any}> = [];
+      const batchSets: {ref: any}[] = [];
       return {
         set: vi.fn((ref, data) => {
           batchOps.push({type: 'set', ref, data});
@@ -61,7 +61,7 @@ const createMockFirestore = (existingTransactionIds: string[] = []) => {
     runTransaction: vi.fn(async (updateFunction: any) => {
       // Ensure transactions run serially (simulating Firestore's isolation)
       const previousTransaction = transactionLock;
-      let resolveThisTransaction: () => void;
+      let resolveThisTransaction: (() => void) | undefined;
       transactionLock = new Promise((resolve) => {
         resolveThisTransaction = resolve;
       });
@@ -82,10 +82,10 @@ const createMockFirestore = (existingTransactionIds: string[] = []) => {
           update: vi.fn(),
         };
         const result = await updateFunction(mockTransaction);
-        resolveThisTransaction!();
+        if (resolveThisTransaction) resolveThisTransaction();
         return result;
       } catch (error) {
-        resolveThisTransaction!();
+        if (resolveThisTransaction) resolveThisTransaction();
         throw error;
       }
     }),
@@ -123,7 +123,9 @@ describe('addPayment', () => {
 
     const succeeded = results.filter((r) => r.status === 'fulfilled');
     const failed = results.filter(
-      (r) => r.status === 'rejected' && r.reason.message === 'Transaction already exists',
+      (r) =>
+        r.status === 'rejected' &&
+        r.reason.message === 'Transaction already exists',
     );
 
     // Exactly one should succeed
