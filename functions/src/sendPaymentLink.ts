@@ -95,7 +95,12 @@ export const sendPaymentLink = onCall(async (request) => {
     const slackClient = new WebClient(slackBotToken);
     await slackClient.chat.postMessage({
       channel: account.slack.id,
-      text: `Hi ${account.slack.name}! Please pay €${data.amount.toFixed(2)} for your Chaquip balance: ${checkout.checkoutUrl}`,
+      text: `:chaquip-cat: Hey dear Chaquiper! :chaquip-cat:
+:money_with_wings: Time to settle your Chaquip tab!
+You owe ${data.amount.toFixed(2)}€ to the Chaquip.
+You can pay using <${checkout.checkoutUrl}|this link>.
+Bisous`,
+      unfurl_links: false,
     });
 
     return {
