@@ -11,25 +11,31 @@ export async function addPayment(
   amount: number,
   transactionId?: string,
 ): Promise<void> {
-  const batch = firestore.batch();
   const transactionRef = transactionId
     ? firestore.collection('transactions').doc(transactionId)
     : firestore.collection('transactions').doc();
   const accountRef = firestore.collection('accounts').doc(accountId);
   const timestamp = Date.now();
 
-  batch.set(transactionRef, {
-    id: transactionRef.id,
-    type: 'payment',
-    account: accountId,
-    amount,
-    timestamp,
-  });
+  await firestore.runTransaction(async (transaction) => {
+    // Check if transaction already exists (atomic read)
+    const existingTransaction = await transaction.get(transactionRef);
+    if (existingTransaction.exists) {
+      throw new Error('Transaction already exists');
+    }
 
-  batch.update(accountRef, {
-    'activity.totalPaid': FieldValue.increment(amount),
-    'activity.lastPaymentTimestamp': timestamp,
-  });
+    // Create transaction and update account (atomic write)
+    transaction.set(transactionRef, {
+      id: transactionRef.id,
+      type: 'payment',
+      account: accountId,
+      amount,
+      timestamp,
+    });
 
-  await batch.commit();
+    transaction.update(accountRef, {
+      'activity.totalPaid': FieldValue.increment(amount),
+      'activity.lastPaymentTimestamp': timestamp,
+    });
+  });
 }
