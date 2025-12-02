@@ -1,5 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {beforeEach, describe, expect, it, vi} from 'vitest';
+
+// Mock firebase-admin/firestore before importing transactionService
+vi.mock('firebase-admin/firestore', () => ({
+  FieldValue: {
+    increment: vi.fn((value) => value),
+  },
+}));
+
 import {addPayment} from './transactionService';
 
 // Mock Firestore
