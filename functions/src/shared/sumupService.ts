@@ -5,6 +5,7 @@ interface CreateCheckoutParams {
   description: string;
   merchantCode: string;
   returnUrl: string;
+  apiKey?: string; // Optional for backward compatibility with tests
 }
 
 interface CreateCheckoutResponse {
@@ -18,7 +19,8 @@ interface CreateCheckoutResponse {
 export async function createCheckout(
   params: CreateCheckoutParams,
 ): Promise<CreateCheckoutResponse> {
-  const apiKey = process.env.SUMUP_API_KEY;
+  // Allow apiKey to be passed as parameter (for production) or from env (for tests/local dev)
+  const apiKey = params.apiKey ?? process.env.SUMUP_API_KEY;
   if (!apiKey) {
     throw new Error('SUMUP_API_KEY not configured');
   }
@@ -86,9 +88,11 @@ interface CheckoutDetails {
  */
 export async function getCheckoutDetails(
   checkoutId: string,
+  apiKey?: string, // Optional for backward compatibility with tests
 ): Promise<CheckoutDetails> {
-  const apiKey = process.env.SUMUP_API_KEY;
-  if (!apiKey) {
+  // Allow apiKey to be passed as parameter (for production) or from env (for tests/local dev)
+  const key = apiKey ?? process.env.SUMUP_API_KEY;
+  if (!key) {
     throw new Error('SUMUP_API_KEY not configured');
   }
 
@@ -98,7 +102,7 @@ export async function getCheckoutDetails(
       {
         method: 'GET',
         headers: {
-          Authorization: `Bearer ${apiKey}`,
+          Authorization: `Bearer ${key}`,
           'Content-Type': 'application/json',
         },
       },
