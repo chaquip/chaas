@@ -7,3 +7,4 @@ initializeApp();
 export {updateUsers} from './updateUsers.js';
 export {sendPaymentLink} from './sendPaymentLink.js';
 export {handleSumUpWebhook} from './handleSumUpWebhook.js';
+export {getPaymentLinkForSlackUser} from './getPaymentLinkForSlackUser.js';
