@@ -160,3 +160,92 @@ describe('AccountGrid sorting', () => {
     // Charlie and Alice both have 30, so their order may vary
   });
 });
+
+describe('AccountGrid global balance', () => {
+  it('displays global balance with correct total owed', async () => {
+    const {useAccounts} = await import('../hooks');
+    vi.mocked(useAccounts).mockReturnValue(mockAccounts);
+
+    const {getByText} = renderAccountGrid();
+
+    // Alice owes 20 (50-30), Bob has overpaid by 20 (20-40), Charlie is even (30-30)
+    // Total owed should be 20 (only Alice)
+    expect(getByText(/€20\.00/)).toBeInTheDocument();
+    expect(getByText(/Total Owed/i)).toBeInTheDocument();
+  });
+
+  it('calculates correct balance breakdown for employees and non-employees', async () => {
+    const accountsWithEmployees: Account[] = [
+      {
+        id: '1',
+        slack: {
+          id: 'slack-1',
+          name: 'Employee Alice',
+          username: 'alice',
+          pictureUrl: 'alice.jpg',
+        },
+        activity: {
+          totalPurchased: 100,
+          totalPaid: 50,
+          lastPurchaseTimestamp: 1700000000000,
+          lastPaymentTimestamp: 1699000000000,
+        },
+        isEmployee: true,
+      },
+      {
+        id: '2',
+        slack: {
+          id: 'slack-2',
+          name: 'Non-Employee Bob',
+          username: 'bob',
+          pictureUrl: 'bob.jpg',
+        },
+        activity: {
+          totalPurchased: 60,
+          totalPaid: 40,
+          lastPurchaseTimestamp: 1700100000000,
+          lastPaymentTimestamp: 1699100000000,
+        },
+        isEmployee: false,
+      },
+    ];
+
+    const {useAccounts} = await import('../hooks');
+    vi.mocked(useAccounts).mockReturnValue(accountsWithEmployees);
+
+    const {getByText} = renderAccountGrid();
+
+    // Alice (employee) owes 50, Bob (non-employee) owes 20
+    // Total owed should be 70
+    expect(getByText(/€70\.00/)).toBeInTheDocument();
+  });
+
+  it('displays zero when no one owes money', async () => {
+    const accountsWithNoDebt: Account[] = [
+      {
+        id: '1',
+        slack: {
+          id: 'slack-1',
+          name: 'Bob Overpaid',
+          username: 'bob',
+          pictureUrl: 'bob.jpg',
+        },
+        activity: {
+          totalPurchased: 20,
+          totalPaid: 40,
+          lastPurchaseTimestamp: 1700100000000,
+          lastPaymentTimestamp: 1699100000000,
+        },
+        isEmployee: false,
+      },
+    ];
+
+    const {useAccounts} = await import('../hooks');
+    vi.mocked(useAccounts).mockReturnValue(accountsWithNoDebt);
+
+    const {getByText} = renderAccountGrid();
+
+    // Bob has overpaid, so total owed is 0
+    expect(getByText(/€0\.00/)).toBeInTheDocument();
+  });
+});
