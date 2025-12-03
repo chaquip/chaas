@@ -514,33 +514,105 @@ firebase deploy
 - Development: `chaquip-dev-f52f4`
 - Production: `chaquip-prod`
 
-**Required Environment Variables**:
+#### Overview
 
-Frontend (`.env`):
+The application uses Firebase Secret Manager to store all sensitive configuration values (API keys, tokens, merchant codes) securely.
 
-- `VITE_FIREBASE_API_KEY` - Firebase API key
-- `VITE_FIREBASE_AUTH_DOMAIN` - Firebase auth domain
-- `VITE_FIREBASE_PROJECT_ID` - Firebase project ID
-- `VITE_FIREBASE_STORAGE_BUCKET` - Firebase storage bucket
-- `VITE_FIREBASE_MESSAGING_SENDER_ID` - Firebase messaging sender ID
-- `VITE_FIREBASE_APP_ID` - Firebase app ID
+#### Cloud Functions Secrets (Sensitive Data)
 
-Cloud Functions (`functions/.env`):
+The following secrets are required for cloud functions:
 
-- `SLACK_BOT_TOKEN` - Slack Bot OAuth token
-- `SUMUP_API_KEY` - SumUp API authentication token
+- `SLACK_BOT_TOKEN` - Slack Bot User OAuth Token
+- `SUMUP_API_KEY` - SumUp API Key for payment processing
 - `SUMUP_MERCHANT_CODE` - SumUp merchant identifier
+- `CHAQUIP_API_KEY` - API key for external Slack command integration
 
-**Setting Environment Variables**:
+**Setting Secrets**
 
-Environment variables are configured via **GitHub Actions secrets**:
+Use the Firebase CLI to set secrets:
 
-- `ENV_FILE_DEV` / `ENV_FILE_PROD` - Frontend environment variables (content of `.env`)
-- `FUNCTIONS_ENV_DEV` / `FUNCTIONS_ENV_PROD` - Cloud Functions environment variables (content of `functions/.env`)
-- `FIREBASE_SERVICE_ACCOUNT_DEV` / `FIREBASE_SERVICE_ACCOUNT_PROD` - Service account JSON for deployment
-- `FIREBASE_PROJECT_ID_DEV` / `FIREBASE_PROJECT_ID_PROD` - Firebase project IDs
+```bash
+# Set all required secrets
+firebase functions:secrets:set SLACK_BOT_TOKEN
+firebase functions:secrets:set SUMUP_API_KEY
+firebase functions:secrets:set SUMUP_MERCHANT_CODE
+firebase functions:secrets:set CHAQUIP_API_KEY
+```
 
-During CI/CD deployment, these secrets are written to `.env` files before building and deploying.
+**Viewing Secrets**
+
+```bash
+# List all secrets
+firebase functions:secrets:access
+
+# View a specific secret value (requires appropriate permissions)
+firebase functions:secrets:access SECRET_NAME
+```
+
+#### Frontend Configuration (VITE\_\* Variables)
+
+The frontend uses Vite environment variables for Firebase configuration. These are **NOT secrets** - they are public configuration values that are safe to commit to source control.
+
+**Retrieving Firebase Configuration from Console**
+
+To get the Firebase configuration for your frontend:
+
+1. Go to [Firebase Console](https://console.firebase.google.com/)
+2. Select your project (e.g., `chaquip-prod` or `chaquip-dev-f52f4`)
+3. Click on **Project settings** (gear icon) in the left sidebar
+4. Scroll down to **Your apps** section
+5. Select your web app or click **Add app** if none exists
+6. Copy the Firebase configuration object
+
+The configuration will look like this:
+
+```javascript
+const firebaseConfig = {
+  apiKey: 'AIzaSy...',
+  authDomain: 'your-project.firebaseapp.com',
+  projectId: 'your-project',
+  storageBucket: 'your-project.firebasestorage.app',
+  messagingSenderId: '123456789',
+  appId: '1:123456789:web:abcd1234',
+};
+```
+
+**Setting VITE\_\* Variables in .env**
+
+Create or update your `.env` file in the project root with the Firebase configuration:
+
+```bash
+# Frontend Firebase Configuration
+VITE_FIREBASE_PROJECT_ID=your-project-id
+VITE_FIREBASE_API_KEY=AIzaSy...
+VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+VITE_FIREBASE_STORAGE_BUCKET=your-project.firebasestorage.app
+VITE_FIREBASE_MESSAGING_SENDER_ID=123456789
+VITE_FIREBASE_APP_ID=1:123456789:web:abcd1234
+```
+
+#### Local Development
+
+For local development with Firebase emulators:
+
+1. **Functions**: Create `functions/.env` with all secrets:
+
+   ```bash
+   SLACK_BOT_TOKEN=xoxb-your-token
+   SUMUP_API_KEY=your-api-key
+   CHAQUIP_API_KEY=your-api-key
+   SUMUP_MERCHANT_CODE=your-dev-merchant-code
+   ```
+
+2. **Frontend**: Use `.env` or `.env.development` in the project root:
+
+   ```bash
+   VITE_FIREBASE_PROJECT_ID=chaas-dev
+   VITE_FIREBASE_API_KEY=fake-api-key-for-emulator
+   # ... other VITE_* variables
+   ```
+
+3. **Important**: Never commit `.env` or `functions/.env` files containing real secrets!
 
 ## Database Schema
 
