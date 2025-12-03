@@ -216,20 +216,30 @@ Functions automatically start with `yarn dev`. To test a specific function:
 **Slack Integration:**
 
 - Uses `@slack/web-api` package
-- Requires `SLACK_BOT_TOKEN` environment variable in `functions/.env`
+- Requires `SLACK_BOT_TOKEN` secret (see [README.md Configuration section](README.md#configuration))
 - Fetches workspace members and sends DMs
 
 **SumUp Payment Processing:**
 
 - Creates checkout pages for payment collection
 - Webhook validation via API fetch (prevent fake payment notifications)
-- Requires `SUMUP_API_KEY` and `SUMUP_MERCHANT_CODE` in `functions/.env`
+- Requires `SUMUP_API_KEY` and `SUMUP_MERCHANT_CODE` secrets (see [README.md Configuration section](README.md#configuration))
 
-**Environment Variables:**
+**Configuration Management:**
 
-- Frontend: `.env` file with `VITE_*` prefixed variables
-- Functions: `functions/.env` file for secrets (Slack, SumUp tokens)
-- Never commit `.env` files - use `.env.example` if needed
+Cloud functions use Firebase Secret Manager for all configuration:
+
+- **Secrets**: `SLACK_BOT_TOKEN`, `SUMUP_API_KEY`, `SUMUP_MERCHANT_CODE`, `CHAQUIP_API_KEY`
+- **Local Development**: Use `functions/.env` file with all values for emulator testing
+- **Environment-specific values**: Some secrets (like `SUMUP_MERCHANT_CODE`) have different values per Firebase project
+- See [README.md Configuration section](README.md#configuration) for complete setup instructions
+
+**Frontend Configuration:**
+
+- Uses `.env` file with `VITE_*` prefixed variables for Firebase configuration
+- Values are **public** (safe to commit) and obtained from Firebase Console
+- Go to **Project settings > General** in Firebase Console to retrieve configuration values
+- See [README.md Configuration section](README.md#configuration) for detailed instructions on retrieving and setting VITE\_\* variables
 
 ## Code Style and Patterns
 

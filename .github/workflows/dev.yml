@@ -65,19 +65,16 @@ jobs:
       - name: Create .env file
         run: echo "${{ secrets.ENV_FILE_DEV }}" > .env
 
-      - name: Create functions .env file
-        run: echo "${{ secrets.FUNCTIONS_ENV_DEV }}" > functions/.env
-
       - name: Build
         run: yarn build
 
       - name: Build functions
         run: cd functions && yarn build
 
-      - name: Deploy Firebase Functions
+      - name: Deploy Firebase
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
         run: |
           echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_DEV }}' > ${{ runner.temp }}/firebase-service-account.json
           yarn global add firebase-tools
-          firebase deploy --project ${{ secrets.FIREBASE_PROJECT_ID_DEV }} --non-interactive
+          firebase deploy --project ${{ vars.FIREBASE_PROJECT_ID_DEV }} --non-interactive
