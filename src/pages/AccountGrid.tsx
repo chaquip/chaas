@@ -249,7 +249,7 @@ export const AccountGrid = () => {
         </Box>
         <Box px={8} py={8}>
           <SimpleGrid
-            columns={{base: 2, md: 3, lg: 4, xl: 5, '2xl': 6}}
+            columns={{base: 2, md: 3, lg: 5, xl: 6, '2xl': 7}}
             spacing={8}
           >
             {sortedAccounts.map(({id, slack: {name, pictureUrl}, activity}) => (
