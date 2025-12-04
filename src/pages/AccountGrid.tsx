@@ -21,6 +21,7 @@ import {
   AccountSearchInput,
   HelpModal,
   SyncResultsModal,
+  GlobalBalanceDisplay,
 } from '../components';
 import {useAccounts, useAuth} from '../hooks';
 import {FocusableElement} from '../models';
@@ -103,6 +104,33 @@ export const AccountGrid = () => {
     }
   }, [accounts, sortBy]);
 
+  const balanceMetrics = useMemo(() => {
+    if (!sortedAccounts) return null;
+
+    let totalOwed = 0;
+    let totalOverpaid = 0;
+    let employeeDebt = 0;
+    let nonEmployeeDebt = 0;
+
+    sortedAccounts.forEach((account) => {
+      const balance =
+        account.activity.totalPurchased - account.activity.totalPaid;
+
+      if (balance > 0) {
+        totalOwed += balance;
+        if (account.isEmployee) {
+          employeeDebt += balance;
+        } else {
+          nonEmployeeDebt += balance;
+        }
+      } else if (balance < 0) {
+        totalOverpaid += Math.abs(balance);
+      }
+    });
+
+    return {totalOwed, totalOverpaid, employeeDebt, nonEmployeeDebt};
+  }, [sortedAccounts]);
+
   if (sortedAccounts === null) {
     return (
       <Center h={'100vh'}>
@@ -146,7 +174,7 @@ export const AccountGrid = () => {
           px={8}
           py={3}
         >
-          <HStack spacing={3} justify={'space-between'}>
+          <HStack spacing={3} justify={'space-between'} position={'relative'}>
             <HStack spacing={3}>
               <Text fontSize={'sm'} fontWeight={'medium'} color={'gray.600'}>
                 Sort by:
@@ -192,6 +220,20 @@ export const AccountGrid = () => {
                 </MenuList>
               </Menu>
             </HStack>
+            <Box
+              position={'absolute'}
+              left={'50%'}
+              transform={'translateX(-50%)'}
+            >
+              {balanceMetrics && (
+                <GlobalBalanceDisplay
+                  totalOwed={balanceMetrics.totalOwed}
+                  totalOverpaid={balanceMetrics.totalOverpaid}
+                  employeeDebt={balanceMetrics.employeeDebt}
+                  nonEmployeeDebt={balanceMetrics.nonEmployeeDebt}
+                />
+              )}
+            </Box>
             <Button
               onClick={() => void handleSyncUsers()}
               leftIcon={<RepeatIcon />}
