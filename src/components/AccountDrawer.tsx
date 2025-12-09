@@ -1,5 +1,6 @@
 import {useState, useCallback, useEffect, useRef} from 'react';
 import {
+  Badge,
   Box,
   Drawer,
   DrawerHeader,
@@ -13,6 +14,7 @@ import {
   TabPanels,
   TabPanel,
   Heading,
+  HStack,
   VStack,
   Text,
   SimpleGrid,
@@ -54,6 +56,7 @@ export type AccountDrawerProps = {
   name: string;
   totalPaid: number;
   totalPurchased: number;
+  isEmployee: boolean;
 };
 
 export const AccountDrawer = ({
@@ -64,6 +67,7 @@ export const AccountDrawer = ({
   name,
   totalPaid,
   totalPurchased,
+  isEmployee,
 }: AccountDrawerProps) => {
   const focusableElementRef = useFocusableElementRef();
   const balance = totalPaid - totalPurchased;
@@ -386,7 +390,19 @@ export const AccountDrawer = ({
           borderColor={'gray.200'}
         >
           <VStack align={'start'} spacing={4}>
-            <Heading size={'lg'}>{name}</Heading>
+            <HStack spacing={3}>
+              <Heading size={'lg'}>{name}</Heading>
+              <Badge
+                fontSize={'sm'}
+                fontWeight={'medium'}
+                colorScheme={isEmployee ? 'purple' : 'gray'}
+                px={2}
+                py={1}
+                borderRadius={'md'}
+              >
+                {isEmployee ? 'Employee' : 'Non-Employee'}
+              </Badge>
+            </HStack>
             <Box display={'flex'} gap={3} flexWrap={'wrap'}>
               <Text
                 fontSize={'lg'}

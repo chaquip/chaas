@@ -16,6 +16,7 @@ type AccountCardProps = {
   pictureUrl: string;
   totalPaid: number;
   totalPurchased: number;
+  isEmployee: boolean;
   onChargeSuccess?: () => void;
 };
 
@@ -48,6 +49,7 @@ export const AccountCard = memo(function AccountCard({
   pictureUrl,
   totalPaid,
   totalPurchased,
+  isEmployee,
   onChargeSuccess,
 }: AccountCardProps) {
   const {isOpen, onOpen, onClose} = useDisclosure();
@@ -114,6 +116,7 @@ export const AccountCard = memo(function AccountCard({
         name={name}
         totalPaid={totalPaid}
         totalPurchased={totalPurchased}
+        isEmployee={isEmployee}
       />
     </>
   );

@@ -57,6 +57,7 @@ describe('AccountDrawer component', () => {
         name={name}
         totalPaid={totalPaid}
         totalPurchased={totalPurchased}
+        isEmployee={false}
         onClose={vi.fn()}
       />,
     );
@@ -72,6 +73,7 @@ describe('AccountDrawer component', () => {
         name={name}
         totalPaid={totalPaid}
         totalPurchased={totalPurchased}
+        isEmployee={false}
         onClose={vi.fn()}
       />,
     );
@@ -89,6 +91,7 @@ describe('AccountDrawer component', () => {
         name={name}
         totalPaid={totalPaid}
         totalPurchased={totalPurchased}
+        isEmployee={false}
         onClose={vi.fn()}
       />,
     );
@@ -122,6 +125,7 @@ describe('AccountDrawer component', () => {
         name={name}
         totalPaid={30}
         totalPurchased={10}
+        isEmployee={false}
         onClose={vi.fn()}
       />,
     );
@@ -143,6 +147,7 @@ describe('AccountDrawer component', () => {
           name={name}
           totalPaid={10}
           totalPurchased={30}
+          isEmployee={false}
           onClose={vi.fn()}
         />
       </FocusableElementRefContext.Provider>,
@@ -165,6 +170,7 @@ describe('AccountDrawer component', () => {
         name={name}
         totalPaid={totalPaid}
         totalPurchased={totalPurchased}
+        isEmployee={false}
         onClose={vi.fn()}
       />,
     );
