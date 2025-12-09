@@ -24,6 +24,7 @@ describe('AccountCard component', () => {
         pictureUrl={pictureUrl}
         totalPaid={totalPaid}
         totalPurchased={totalPurchased}
+        isEmployee={false}
       />,
     );
 
@@ -41,6 +42,7 @@ describe('AccountCard component', () => {
         pictureUrl={pictureUrl}
         totalPaid={totalPaid}
         totalPurchased={totalPurchased}
+        isEmployee={false}
       />,
     );
 
@@ -57,6 +59,7 @@ describe('AccountCard component', () => {
         pictureUrl={pictureUrl}
         totalPaid={30}
         totalPurchased={10}
+        isEmployee={false}
       />,
     );
 
@@ -74,6 +77,7 @@ describe('AccountCard component', () => {
         pictureUrl={pictureUrl}
         totalPaid={10}
         totalPurchased={30}
+        isEmployee={false}
       />,
     );
 
@@ -91,6 +95,7 @@ describe('AccountCard component', () => {
         pictureUrl={pictureUrl}
         totalPaid={20}
         totalPurchased={20}
+        isEmployee={false}
       />,
     );
 
@@ -108,6 +113,7 @@ describe('AccountCard component', () => {
         pictureUrl={pictureUrl}
         totalPaid={50.5}
         totalPurchased={25.25}
+        isEmployee={false}
       />,
     );
 
@@ -120,6 +126,7 @@ describe('AccountCard component', () => {
         pictureUrl={pictureUrl}
         totalPaid={10}
         totalPurchased={35.75}
+        isEmployee={false}
       />,
     );
 

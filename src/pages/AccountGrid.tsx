@@ -5,17 +5,15 @@ import {
   Spinner,
   SimpleGrid,
   Button,
+  ButtonGroup,
   HStack,
   Text,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
   useToast,
   useDisclosure,
 } from '@chakra-ui/react';
-import {ChevronDownIcon, RepeatIcon} from '@chakra-ui/icons';
+import {RepeatIcon} from '@chakra-ui/icons';
 import {getFunctions, httpsCallable} from 'firebase/functions';
+import type {Account} from '../models';
 import {
   AccountCard,
   AccountSearchInput,
@@ -29,10 +27,12 @@ import {FocusableElementRefContext} from '../contexts';
 import type {SyncResults} from '../types/syncResults';
 
 type SortOption = 'lastTransaction' | 'debt' | 'totalPaid';
+type EmployeeFilter = 'all' | 'employee' | 'nonEmployee';
 
 export const AccountGrid = () => {
   const [searchValue, setSearchValue] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('lastTransaction');
+  const [employeeFilter, setEmployeeFilter] = useState<EmployeeFilter>('all');
   const deferredSearchValue = useDeferredValue(searchValue);
   const accounts = useAccounts(deferredSearchValue);
   const focusableElementRef = useRef<FocusableElement>(null);
@@ -74,10 +74,20 @@ export const AccountGrid = () => {
     }
   }, [toast, onOpen]);
 
-  const sortedAccounts = useMemo(() => {
+  const filteredAccounts = useMemo(() => {
     if (accounts === null) return null;
 
-    const accountsCopy = [...accounts];
+    return accounts.filter((account: Account) => {
+      if (employeeFilter === 'all') return true;
+      if (employeeFilter === 'employee') return account.isEmployee;
+      return !account.isEmployee;
+    });
+  }, [accounts, employeeFilter]);
+
+  const sortedAccounts = useMemo(() => {
+    if (filteredAccounts === null) return null;
+
+    const accountsCopy = [...filteredAccounts];
 
     switch (sortBy) {
       case 'lastTransaction': {
@@ -102,7 +112,7 @@ export const AccountGrid = () => {
       default:
         return accountsCopy;
     }
-  }, [accounts, sortBy]);
+  }, [filteredAccounts, sortBy]);
 
   const balanceMetrics = useMemo(() => {
     if (!sortedAccounts) return null;
@@ -175,51 +185,117 @@ export const AccountGrid = () => {
           py={3}
         >
           <HStack spacing={3} justify={'space-between'} position={'relative'}>
-            <HStack spacing={3}>
-              <Text fontSize={'sm'} fontWeight={'medium'} color={'gray.600'}>
-                Sort by:
-              </Text>
-              <Menu>
-                <MenuButton
-                  as={Button}
-                  rightIcon={<ChevronDownIcon />}
-                  size={'sm'}
-                  variant={'outline'}
-                  bg={'white'}
-                  borderColor={'gray.300'}
-                  width={'200px'}
-                  textAlign={'left'}
-                  fontWeight={'normal'}
+            <Box>
+              <HStack spacing={2} mb={2}>
+                <Text
+                  fontSize={'xs'}
+                  fontWeight={'medium'}
+                  color={'gray.600'}
+                  width={'50px'}
                 >
-                  {sortBy === 'lastTransaction' && 'Last Transaction'}
-                  {sortBy === 'debt' && 'Debt'}
-                  {sortBy === 'totalPaid' && 'Total Paid'}
-                </MenuButton>
-                <MenuList minWidth={'200px'}>
-                  <MenuItem
+                  Filter:
+                </Text>
+                <ButtonGroup size={'xs'} isAttached variant={'outline'}>
+                  <Button
+                    onClick={() => {
+                      setEmployeeFilter('all');
+                    }}
+                    bg={employeeFilter === 'all' ? 'blue.500' : 'white'}
+                    color={employeeFilter === 'all' ? 'white' : 'gray.700'}
+                    borderColor={'gray.300'}
+                    _hover={{
+                      bg: employeeFilter === 'all' ? 'blue.600' : 'gray.100',
+                    }}
+                  >
+                    All
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setEmployeeFilter('employee');
+                    }}
+                    bg={employeeFilter === 'employee' ? 'blue.500' : 'white'}
+                    color={employeeFilter === 'employee' ? 'white' : 'gray.700'}
+                    borderColor={'gray.300'}
+                    _hover={{
+                      bg:
+                        employeeFilter === 'employee' ? 'blue.600' : 'gray.100',
+                    }}
+                  >
+                    Employee
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setEmployeeFilter('nonEmployee');
+                    }}
+                    bg={employeeFilter === 'nonEmployee' ? 'blue.500' : 'white'}
+                    color={
+                      employeeFilter === 'nonEmployee' ? 'white' : 'gray.700'
+                    }
+                    borderColor={'gray.300'}
+                    _hover={{
+                      bg:
+                        employeeFilter === 'nonEmployee'
+                          ? 'blue.600'
+                          : 'gray.100',
+                    }}
+                  >
+                    Non-Employee
+                  </Button>
+                </ButtonGroup>
+              </HStack>
+              <HStack spacing={2}>
+                <Text
+                  fontSize={'xs'}
+                  fontWeight={'medium'}
+                  color={'gray.600'}
+                  width={'50px'}
+                >
+                  Sort by:
+                </Text>
+                <ButtonGroup size={'xs'} isAttached variant={'outline'}>
+                  <Button
                     onClick={() => {
                       setSortBy('lastTransaction');
                     }}
+                    bg={sortBy === 'lastTransaction' ? 'blue.500' : 'white'}
+                    color={sortBy === 'lastTransaction' ? 'white' : 'gray.700'}
+                    borderColor={'gray.300'}
+                    _hover={{
+                      bg:
+                        sortBy === 'lastTransaction' ? 'blue.600' : 'gray.100',
+                    }}
                   >
-                    Last Transaction
-                  </MenuItem>
-                  <MenuItem
+                    Last
+                  </Button>
+                  <Button
                     onClick={() => {
                       setSortBy('debt');
                     }}
+                    bg={sortBy === 'debt' ? 'blue.500' : 'white'}
+                    color={sortBy === 'debt' ? 'white' : 'gray.700'}
+                    borderColor={'gray.300'}
+                    _hover={{
+                      bg: sortBy === 'debt' ? 'blue.600' : 'gray.100',
+                    }}
                   >
                     Debt
-                  </MenuItem>
-                  <MenuItem
+                  </Button>
+                  <Button
                     onClick={() => {
                       setSortBy('totalPaid');
                     }}
+                    bg={sortBy === 'totalPaid' ? 'blue.500' : 'white'}
+                    color={sortBy === 'totalPaid' ? 'white' : 'gray.700'}
+                    borderColor={'gray.300'}
+                    _hover={{
+                      bg: sortBy === 'totalPaid' ? 'blue.600' : 'gray.100',
+                    }}
                   >
                     Total Paid
-                  </MenuItem>
-                </MenuList>
-              </Menu>
-            </HStack>
+                  </Button>
+                </ButtonGroup>
+              </HStack>
+            </Box>
             <Box
               position={'absolute'}
               left={'50%'}
@@ -252,17 +328,20 @@ export const AccountGrid = () => {
             columns={{base: 2, md: 3, lg: 4, xl: 5, '2xl': 6}}
             spacing={8}
           >
-            {sortedAccounts.map(({id, slack: {name, pictureUrl}, activity}) => (
-              <AccountCard
-                key={id}
-                id={id}
-                name={name}
-                pictureUrl={pictureUrl}
-                totalPaid={activity.totalPaid}
-                totalPurchased={activity.totalPurchased}
-                onChargeSuccess={handleChargeSuccess}
-              />
-            ))}
+            {sortedAccounts.map(
+              ({id, slack: {name, pictureUrl}, activity, isEmployee}) => (
+                <AccountCard
+                  key={id}
+                  id={id}
+                  name={name}
+                  pictureUrl={pictureUrl}
+                  totalPaid={activity.totalPaid}
+                  totalPurchased={activity.totalPurchased}
+                  isEmployee={isEmployee}
+                  onChargeSuccess={handleChargeSuccess}
+                />
+              ),
+            )}
           </SimpleGrid>
         </Box>
       </Box>
