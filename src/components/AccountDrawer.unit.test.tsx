@@ -160,6 +160,44 @@ describe('AccountDrawer component', () => {
     ).toBeInTheDocument();
   });
 
+  it('shows send payment link button for employees', async () => {
+    const user = userEvent.setup();
+
+    const {getByRole, getByText} = renderWithProviders(
+      <AccountDrawer
+        isOpen={true}
+        accountId={accountId}
+        name={name}
+        totalPaid={totalPaid}
+        totalPurchased={totalPurchased}
+        isEmployee={true}
+        onClose={vi.fn()}
+      />,
+    );
+
+    await user.click(getByRole('tab', {name: /pay/i}));
+    expect(getByText('Send Payment Link via Slack')).toBeInTheDocument();
+  });
+
+  it('hides send payment link button for non-employees', async () => {
+    const user = userEvent.setup();
+
+    const {getByRole, queryByText} = renderWithProviders(
+      <AccountDrawer
+        isOpen={true}
+        accountId={accountId}
+        name={name}
+        totalPaid={totalPaid}
+        totalPurchased={totalPurchased}
+        isEmployee={false}
+        onClose={vi.fn()}
+      />,
+    );
+
+    await user.click(getByRole('tab', {name: /pay/i}));
+    expect(queryByText('Send Payment Link via Slack')).not.toBeInTheDocument();
+  });
+
   it('shows loading spinner when items are loading', () => {
     mockUseItems.mockReturnValueOnce(null);
 

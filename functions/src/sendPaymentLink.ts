@@ -74,7 +74,15 @@ export const sendPaymentLink = onCall(
           id: string;
           name: string;
         };
+        isEmployee: boolean;
       };
+
+      if (!account.isEmployee) {
+        throw new HttpsError(
+          'permission-denied',
+          'Payment links can only be sent to employees',
+        );
+      }
 
       // Generate a unique transaction ID
       const transactionId = randomUUID();

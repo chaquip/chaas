@@ -562,24 +562,26 @@ export const AccountDrawer = ({
                       Pay
                     </Button>
 
-                    <Button
-                      colorScheme={'blue'}
-                      size={'lg'}
-                      width={'full'}
-                      onClick={() => {
-                        void handleSendPaymentLink();
-                      }}
-                      isDisabled={!paymentAmount || paymentAmountValue <= 0}
-                      isLoading={isSendingPaymentLink}
-                      loadingText={'Sending...'}
-                      transition={'all 0.2s'}
-                      _hover={{
-                        transform: 'translateY(-2px)',
-                        boxShadow: 'lg',
-                      }}
-                    >
-                      Send Payment Link via Slack
-                    </Button>
+                    {isEmployee && (
+                      <Button
+                        colorScheme={'blue'}
+                        size={'lg'}
+                        width={'full'}
+                        onClick={() => {
+                          void handleSendPaymentLink();
+                        }}
+                        isDisabled={!paymentAmount || paymentAmountValue <= 0}
+                        isLoading={isSendingPaymentLink}
+                        loadingText={'Sending...'}
+                        transition={'all 0.2s'}
+                        _hover={{
+                          transform: 'translateY(-2px)',
+                          boxShadow: 'lg',
+                        }}
+                      >
+                        Send Payment Link via Slack
+                      </Button>
+                    )}
                   </VStack>
                 )}
               </TabPanel>
