@@ -5,6 +5,7 @@ export type ReminderResult = {
   slackId: string;
   debt: number;
   tier: ReminderTier;
+  lastPurchaseTimestamp: number;
   sent: boolean;
   error?: string;
 };

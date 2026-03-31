@@ -52,6 +52,8 @@ export const categorizeAccounts = (
     }
   }
 
+  results.sort((a, b) => b.debt - a.debt);
+
   return results;
 };
 
@@ -60,6 +62,7 @@ export interface ReminderResult {
   slackId: string;
   debt: number;
   tier: ReminderTier;
+  lastPurchaseTimestamp: number;
   sent: boolean;
   error?: string;
 }
@@ -115,6 +118,7 @@ export const executeDebtReminders = async (
       slackId: entry.account.slack.id,
       debt: entry.debt,
       tier: entry.tier,
+      lastPurchaseTimestamp: entry.account.activity.lastPurchaseTimestamp,
       sent: false,
     }));
     return results;
@@ -132,6 +136,7 @@ export const executeDebtReminders = async (
       slackId: entry.account.slack.id,
       debt: entry.debt,
       tier: entry.tier,
+      lastPurchaseTimestamp: entry.account.activity.lastPurchaseTimestamp,
       sent: false,
     };
 

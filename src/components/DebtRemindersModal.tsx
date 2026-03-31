@@ -33,6 +33,18 @@ const TIER_COLORS: Record<string, string> = {
   low: 'yellow',
 };
 
+const formatLastSeen = (timestamp: number): string => {
+  if (timestamp === 0) return 'Never';
+  const now = Date.now();
+  const days = Math.floor((now - timestamp) / (24 * 60 * 60 * 1000));
+  if (days === 0) return 'Today';
+  if (days === 1) return '1 day ago';
+  if (days < 30) return `${String(days)} days ago`;
+  const months = Math.floor(days / 30);
+  if (months === 1) return '1 month ago';
+  return `${String(months)} months ago`;
+};
+
 export const DebtRemindersModal = ({
   isOpen,
   onClose,
@@ -93,20 +105,28 @@ export const DebtRemindersModal = ({
                     <Th>Name</Th>
                     <Th>Tier</Th>
                     <Th isNumeric>Debt</Th>
+                    <Th>Last Seen</Th>
                   </Tr>
                 </Thead>
                 <Tbody>
-                  {results.details.map((entry) => (
-                    <Tr key={entry.slackId}>
-                      <Td>{entry.name}</Td>
-                      <Td>
-                        <Badge colorScheme={TIER_COLORS[entry.tier]}>
-                          {entry.tier}
-                        </Badge>
-                      </Td>
-                      <Td isNumeric>{entry.debt.toFixed(2)}€</Td>
-                    </Tr>
-                  ))}
+                  {[...results.details]
+                    .sort((a, b) => b.debt - a.debt)
+                    .map((entry) => (
+                      <Tr key={entry.slackId}>
+                        <Td>{entry.name}</Td>
+                        <Td>
+                          <Badge colorScheme={TIER_COLORS[entry.tier]}>
+                            {entry.tier}
+                          </Badge>
+                        </Td>
+                        <Td isNumeric>{entry.debt.toFixed(2)}€</Td>
+                        <Td>
+                          <Text fontSize={'sm'} color={'gray.600'}>
+                            {formatLastSeen(entry.lastPurchaseTimestamp)}
+                          </Text>
+                        </Td>
+                      </Tr>
+                    ))}
                 </Tbody>
               </Table>
             ) : (
