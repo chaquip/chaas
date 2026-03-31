@@ -1,5 +1,4 @@
 import {describe, it, expect, vi, beforeEach} from 'vitest';
-import {HttpsError} from 'firebase-functions/v2/https';
 
 const mockExecuteDebtReminders = vi.fn();
 
@@ -12,16 +11,21 @@ vi.mock('./shared/debtReminderService.js', () => ({
     mockExecuteDebtReminders(...args),
 }));
 
-vi.mock('firebase-functions/v2/https', async () => {
-  const actual = await vi.importActual<
-    typeof import('firebase-functions/v2/https')
-  >('firebase-functions/v2/https');
+vi.mock('firebase-functions/v2/https', () => {
+  class HttpsError extends Error {
+    code: string;
+    constructor(code: string, message: string) {
+      super(message);
+      this.code = code;
+    }
+  }
   return {
-    ...actual,
+    HttpsError,
     onCall: (handler: (request: unknown) => unknown) => handler,
   };
 });
 
+import {HttpsError} from 'firebase-functions/v2/https';
 import {sendDebtRemindersDryRun} from './sendDebtReminders';
 
 describe('sendDebtRemindersDryRun', () => {
