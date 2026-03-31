@@ -28,6 +28,9 @@ vi.mock('firebase-functions/v2/https', () => {
 import {HttpsError} from 'firebase-functions/v2/https';
 import {sendDebtRemindersDryRun} from './sendDebtReminders';
 
+type CallableHandler = (request: unknown) => Promise<unknown>;
+const handler = sendDebtRemindersDryRun as unknown as CallableHandler;
+
 describe('sendDebtRemindersDryRun', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -36,11 +39,7 @@ describe('sendDebtRemindersDryRun', () => {
   it('throws unauthenticated error when not logged in', async () => {
     const request = {auth: null};
 
-    await expect(
-      (sendDebtRemindersDryRun as (req: typeof request) => Promise<unknown>)(
-        request,
-      ),
-    ).rejects.toThrow(HttpsError);
+    await expect(handler(request)).rejects.toThrow(HttpsError);
   });
 
   it('calls executeDebtReminders with dryRun true', async () => {
@@ -53,9 +52,7 @@ describe('sendDebtRemindersDryRun', () => {
     mockExecuteDebtReminders.mockResolvedValue(mockResults);
 
     const request = {auth: {uid: 'user-1'}};
-    const result = await (
-      sendDebtRemindersDryRun as (req: typeof request) => Promise<unknown>
-    )(request);
+    const result = await handler(request);
 
     expect(result).toEqual(mockResults);
     expect(mockExecuteDebtReminders).toHaveBeenCalledWith({
@@ -71,10 +68,6 @@ describe('sendDebtRemindersDryRun', () => {
 
     const request = {auth: {uid: 'user-1'}};
 
-    await expect(
-      (sendDebtRemindersDryRun as (req: typeof request) => Promise<unknown>)(
-        request,
-      ),
-    ).rejects.toThrow(HttpsError);
+    await expect(handler(request)).rejects.toThrow(HttpsError);
   });
 });
