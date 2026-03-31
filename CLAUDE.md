@@ -160,12 +160,14 @@ For operations that modify multiple documents (e.g., recording a purchase update
 
 ### Firebase Emulators
 
-**Emulator Ports:**
+**Emulator Ports (defaults):**
 
 - Firestore: 8080
 - Auth: 9099
 - Functions: 5001
 - UI: 4000 (http://localhost:4000)
+
+Emulator ports can be customized via `VITE_FIRESTORE_PORT`, `VITE_AUTH_PORT`, and `VITE_FUNCTIONS_PORT` env vars (falling back to the defaults above).
 
 **Emulator Data Persistence:**
 

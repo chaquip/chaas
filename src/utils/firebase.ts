@@ -38,12 +38,18 @@ export const createFirebaseApp = (env: Env): FirebaseApp => {
   const app = initializeApp(options);
 
   if (env !== Env.PROD) {
+    const firestorePort = Number(import.meta.env.VITE_FIRESTORE_PORT || 8080);
+    const authPort = Number(import.meta.env.VITE_AUTH_PORT || 9099);
+    const functionsPort = Number(import.meta.env.VITE_FUNCTIONS_PORT || 5001);
+
     const firestore = getFirestore(app);
-    connectFirestoreEmulator(firestore, 'localhost', 8080);
+    connectFirestoreEmulator(firestore, 'localhost', firestorePort);
     const auth = getAuth(app);
-    connectAuthEmulator(auth, 'http://localhost:9099', {disableWarnings: true});
+    connectAuthEmulator(auth, `http://localhost:${String(authPort)}`, {
+      disableWarnings: true,
+    });
     const functions = getFunctions(app);
-    connectFunctionsEmulator(functions, 'localhost', 5001);
+    connectFunctionsEmulator(functions, 'localhost', functionsPort);
   }
 
   return app;
