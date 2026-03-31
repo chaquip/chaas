@@ -18,6 +18,11 @@ jobs:
           cache: yarn
           cache-dependency-path: yarn.lock
 
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
       - name: Install firebase-tools
         run: yarn global add firebase-tools
 
