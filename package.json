@@ -8,12 +8,12 @@
     "prod": "vite",
     "build": "tsc -b && vite build",
     "build-functions": "cd functions && yarn build --watch",
-    "emulators": "firebase emulators:start --project chaas-dev --only firestore,auth,functions --import .emulators --export-on-exit .emulators",
-    "fixtures": "firebase emulators:exec --project chaas-dev --only firestore,auth --import .emulators --export-on-exit .emulators 'vite-node bin/fixtures.ts'",
-    "fixtures:preprod": "firebase emulators:exec --project chaas-dev --only firestore,auth --import .emulators --export-on-exit .emulators 'vite-node bin/fixtures-prod.ts'",
+    "emulators": "bin/firebase-wrapper.js emulators:start --project chaas-dev --only firestore,auth,functions --import .emulators --export-on-exit .emulators",
+    "fixtures": "bin/firebase-wrapper.js emulators:exec --project chaas-dev --only firestore,auth --import .emulators --export-on-exit .emulators 'vite-node bin/fixtures.ts'",
+    "fixtures:preprod": "bin/firebase-wrapper.js emulators:exec --project chaas-dev --only firestore,auth --import .emulators --export-on-exit .emulators 'vite-node bin/fixtures-prod.ts'",
     "fixtures:prod": "vite-node bin/fixtures-prod.ts",
     "convert-fixtures": "vite-node bin/convert-export-to-fixtures.ts",
-    "update-users": "firebase emulators:exec --project chaas-dev --only firestore,auth --import .emulators --export-on-exit .emulators 'node functions/lib/scripts/update-users.js'",
+    "update-users": "bin/firebase-wrapper.js emulators:exec --project chaas-dev --only firestore,auth --import .emulators --export-on-exit .emulators 'node functions/lib/scripts/update-users.js'",
     "update-users:prod": "node functions/lib/scripts/update-users.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -22,8 +22,8 @@
     "preview": "vite preview",
     "test:unit": "vitest run --project unit --project unit-node",
     "test:unit:watch": "vitest watch --project unit --project unit-node",
-    "test:integration": "firebase emulators:exec --project chaas-test --only firestore,auth 'vitest run --project integration'",
-    "test:integration:watch": "firebase emulators:exec --project chaas-test --only firestore,auth 'vitest watch --project integration'"
+    "test:integration": "bin/firebase-wrapper.js emulators:exec --project chaas-test --only firestore,auth 'vitest run --project integration'",
+    "test:integration:watch": "bin/firebase-wrapper.js emulators:exec --project chaas-test --only firestore,auth 'vitest watch --project integration'"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.2.4",

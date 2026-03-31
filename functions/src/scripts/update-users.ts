@@ -22,8 +22,9 @@ const app = initializeApp({
 const firestore = getFirestore(app);
 
 // Connect to emulators
+const firestorePort = process.env.VITE_FIRESTORE_PORT ?? '8080';
 firestore.settings({
-  host: 'localhost:8080',
+  host: `localhost:${firestorePort}`,
   ssl: false,
 });
 
