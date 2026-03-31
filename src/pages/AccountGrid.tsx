@@ -20,11 +20,13 @@ import {
   HelpModal,
   SyncResultsModal,
   GlobalBalanceDisplay,
+  DebtRemindersModal,
 } from '../components';
 import {useAccounts, useAuth} from '../hooks';
 import {FocusableElement} from '../models';
 import {FocusableElementRefContext} from '../contexts';
 import type {SyncResults} from '../types/syncResults';
+import type {DebtRemindersResults} from '../types/debtRemindersResults';
 
 type SortOption = 'lastTransaction' | 'debt' | 'totalPaid';
 type EmployeeFilter = 'all' | 'employee' | 'nonEmployee';
@@ -39,8 +41,17 @@ export const AccountGrid = () => {
   const {logOut} = useAuth();
   const toast = useToast();
   const {isOpen, onOpen, onClose} = useDisclosure();
+  const {
+    isOpen: isDebtOpen,
+    onOpen: onDebtOpen,
+    onClose: onDebtClose,
+  } = useDisclosure();
   const [isUpdating, setIsUpdating] = useState(false);
   const [syncResults, setSyncResults] = useState<SyncResults | null>(null);
+  const [isLoadingDebtReminders, setIsLoadingDebtReminders] = useState(false);
+  const [debtResults, setDebtResults] = useState<DebtRemindersResults | null>(
+    null,
+  );
 
   const handleChargeSuccess = useCallback(() => {
     setSearchValue('');
@@ -73,6 +84,34 @@ export const AccountGrid = () => {
       setIsUpdating(false);
     }
   }, [toast, onOpen]);
+
+  const handleDebtRemindersDryRun = useCallback(async () => {
+    setIsLoadingDebtReminders(true);
+    setDebtResults(null);
+
+    try {
+      const functions = getFunctions();
+      const sendDebtRemindersDryRun = httpsCallable<
+        Record<string, never>,
+        DebtRemindersResults
+      >(functions, 'sendDebtRemindersDryRun');
+      const response = await sendDebtRemindersDryRun({});
+      setDebtResults(response.data);
+      onDebtOpen();
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to run debt reminders';
+      toast({
+        title: 'Debt Reminders Failed',
+        description: errorMessage,
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setIsLoadingDebtReminders(false);
+    }
+  }, [toast, onDebtOpen]);
 
   const filteredAccounts = useMemo(() => {
     if (accounts === null) return null;
@@ -310,17 +349,29 @@ export const AccountGrid = () => {
                 />
               )}
             </Box>
-            <Button
-              onClick={() => void handleSyncUsers()}
-              leftIcon={<RepeatIcon />}
-              colorScheme={'blue'}
-              variant={'outline'}
-              size={'sm'}
-              isLoading={isUpdating}
-              loadingText={'Syncing...'}
-            >
-              Sync Users
-            </Button>
+            <HStack spacing={2}>
+              <Button
+                onClick={() => void handleDebtRemindersDryRun()}
+                colorScheme={'orange'}
+                variant={'outline'}
+                size={'sm'}
+                isLoading={isLoadingDebtReminders}
+                loadingText={'Checking...'}
+              >
+                Debt Reminders
+              </Button>
+              <Button
+                onClick={() => void handleSyncUsers()}
+                leftIcon={<RepeatIcon />}
+                colorScheme={'blue'}
+                variant={'outline'}
+                size={'sm'}
+                isLoading={isUpdating}
+                loadingText={'Syncing...'}
+              >
+                Sync Users
+              </Button>
+            </HStack>
           </HStack>
         </Box>
         <Box px={8} py={8}>
@@ -350,6 +401,11 @@ export const AccountGrid = () => {
         isOpen={isOpen}
         onClose={onClose}
         results={syncResults}
+      />
+      <DebtRemindersModal
+        isOpen={isDebtOpen}
+        onClose={onDebtClose}
+        results={debtResults}
       />
     </FocusableElementRefContext.Provider>
   );

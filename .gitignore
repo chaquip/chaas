@@ -29,6 +29,7 @@ dist-ssr
 # Firebase
 .firebaserc
 .firebase
+.firebase-config.json
 .emulators
 
 # prod fixtures

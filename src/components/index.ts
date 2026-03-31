@@ -5,3 +5,4 @@ export * from './DrinkCard';
 export * from './TransactionList';
 export * from './SyncResultsModal';
 export * from './GlobalBalanceDisplay';
+export * from './DebtRemindersModal';
