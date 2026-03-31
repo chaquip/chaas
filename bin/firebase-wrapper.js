@@ -3,8 +3,6 @@
 import {readFileSync, writeFileSync, unlinkSync, existsSync} from 'fs';
 import {join, dirname} from 'path';
 import {fileURLToPath} from 'url';
-import {tmpdir} from 'os';
-import {randomBytes} from 'crypto';
 import {execFileSync} from 'child_process';
 
 const DEFAULT_FIRESTORE_PORT = 8080;
@@ -49,10 +47,7 @@ config.emulators.ui = {
   port: Number(process.env.VITE_UI_PORT || DEFAULT_UI_PORT),
 };
 
-const tempConfig = join(
-  tmpdir(),
-  `firebase-${randomBytes(6).toString('hex')}.json`,
-);
+const tempConfig = join(projectDir, '.firebase-config.json');
 writeFileSync(tempConfig, JSON.stringify(config, null, 2));
 
 const args = ['--config', tempConfig, ...process.argv.slice(2)];
