@@ -1,13 +1,5 @@
 import {memo} from 'react';
-import {
-  Avatar,
-  Card,
-  CardFooter,
-  Text,
-  Badge,
-  useDisclosure,
-  Box,
-} from '@chakra-ui/react';
+import {Avatar, Card, Text, Badge, useDisclosure, Box} from '@chakra-ui/react';
 import {AccountDrawer} from './AccountDrawer';
 
 type AccountCardProps = {
@@ -43,6 +35,12 @@ const getBalanceBadgeStyles = (balance: number) => {
   };
 };
 
+const getNameFontSize = (name: string) => {
+  const length = name.length;
+  if (length <= 20) return 'lg';
+  return 'sm';
+};
+
 export const AccountCard = memo(function AccountCard({
   id,
   name,
@@ -71,7 +69,12 @@ export const AccountCard = memo(function AccountCard({
           boxShadow: 'xl',
         }}
       >
-        <Box width={'100%'} aspectRatio={1} overflow={'hidden'}>
+        <Box
+          width={'100%'}
+          aspectRatio={1}
+          overflow={'hidden'}
+          position={'relative'}
+        >
           <Avatar
             src={pictureUrl}
             name={name}
@@ -86,27 +89,42 @@ export const AccountCard = memo(function AccountCard({
               fontSize: '4rem',
             }}
           />
-        </Box>
-        <CardFooter
-          justifyContent={'space-between'}
-          alignItems={'center'}
-          py={4}
-        >
-          <Text fontSize={'lg'} fontWeight={'medium'} verticalAlign={'middle'}>
-            {name}
-          </Text>
           <Badge
+            position={'absolute'}
+            top={2}
+            right={2}
             fontSize={'md'}
             fontWeight={'bold'}
             {...getBalanceBadgeStyles(debt)}
             px={2}
             py={1}
             borderRadius={'md'}
+            boxShadow={'md'}
           >
             {debt >= 0 ? '+' : ''}
             {debt}€
           </Badge>
-        </CardFooter>
+        </Box>
+        <Box
+          display={'flex'}
+          justifyContent={'center'}
+          alignItems={'center'}
+          height={'48px'}
+          px={3}
+        >
+          <Text
+            fontSize={getNameFontSize(name)}
+            fontWeight={'medium'}
+            noOfLines={1}
+            overflow={'hidden'}
+            textOverflow={'ellipsis'}
+            whiteSpace={'nowrap'}
+            width={'100%'}
+            textAlign={'center'}
+          >
+            {name}
+          </Text>
+        </Box>
       </Card>
       <AccountDrawer
         isOpen={isOpen}
